@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lb-ingress
+  annotations:
+spec:
+  #Default backend service
+  defaultBackend:
+    service:
+      name: waf
+      port:
+        number: 80
+
+#  ## Backend services
+#  rules:
+## - host: localhost 
+#    - http:
+#        paths:
+#        - path: /     
+#          pathType: Prefix
+#          backend:
+#            service:
+#              name: testapp 
+#              port:
+#                number: 80
+#        # - path: /app/
+#        #   pathType: Prefix
+#        #   backend:
+#        #     service:
+#        #       name: wwwserver 
+#        #       port:
+#        #         number: 80
+

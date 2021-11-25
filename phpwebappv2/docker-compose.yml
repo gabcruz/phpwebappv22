@@ -1,0 +1,36 @@
+version: '2.4'
+services:
+  haproxy:
+    image: asn/haproxy 
+    build: haproxy/
+    ports:
+      - "80:80"
+    volumes:
+      # HAProxy static config file
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+  wwwserver:
+    build: .
+    image: gcruz00/phpwebapp:v1
+    ports:
+      # Fixed external port for HTTP direct access 
+      - "80"
+    # number of replicas
+    scale: 2
+    mem_limit: 50m
+    mem_reservation: 25m
+    volumes:
+      - ./html:/var/www/html
+    depends_on:
+      - mariadb 
+  mariadb:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=notesdb
+      - MYSQL_USER=usuario
+      - MYSQL_PASSWORD=secreto
+      # Descomentar si hay problemas para incializar la BD de pruebas
+      # https://github.com/docker-library/mariadb/issues/160#issuecomment-528393445
+#     - MYSQL_INIT_SKIP_TZINFO=1
+    ports:
+      - 3306:3306

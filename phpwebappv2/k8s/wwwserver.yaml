@@ -1,0 +1,49 @@
+# APP DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: phpwebapp 
+  name: frontend-deployment 
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: phpwebapp 
+  template:
+    metadata:
+      labels:
+        run: phpwebapp 
+    spec:
+      containers:
+      - image: gcruz00/phpwebappv2
+        imagePullPolicy: IfNotPresent
+        name: phpwebapp
+        ports:
+        - containerPort: 80 
+          protocol: TCP
+     
+        resources:
+          limits:
+            cpu: "50m"
+          requests:
+            cpu: "20m"
+---
+# APP SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: phpwebapp 
+  name: www-frontend 
+spec:
+  ports:
+  - port: 80 
+    protocol: TCP
+    targetPort: 80 
+  selector:
+    run: phpwebapp 
+  type: NodePort
+# type: LoadBalancer
+
+

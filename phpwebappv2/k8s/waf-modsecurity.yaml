@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waf 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: waf 
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: waf 
+    spec:
+      containers:
+      - name: modsecurity-proxy
+        image: jrbalsas/modsecurity:latest
+        #image: vshn/modsecurity
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PORT #WAF port
+          value: "80"
+          # Webservice
+        - name: BACKEND
+          value: "http://www-frontend:80"      
+        - name: RULE_ENGINE
+          value: "DetectionOnly"  #On/Off/DetectionOnly
+        - name: PARANOIA
+          value: "1"
+        # Detailed adjustment 
+        - name: ANOMALY_INBOUND
+          value: "5"
+        - name: ANOMALY_OUTBOUND
+          value: "4"
+        ports:
+          - containerPort: 80
+
+        resources:
+          limits:
+            cpu: 50m
+          requests:
+            cpu: 20m
+            
+        #GKE ingress uses readinessProbe for health checking
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          periodSeconds: 30
+#       livenessProbe:
+#         tcpSocket:
+#           port: 80
+#         initialDelaySeconds: 10
+#         timeoutSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf 
+spec:
+  selector:
+    name: waf 
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
